@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172554">
+  <meta name="description" content="고1 공통수학2·통합과학2 30일 독학 대시보드. 정승제 공통수학2 47강, 김청해 2028 수능개념 통합과학2 40강, 4권 교재와 간격 복습 캘린더를 함께 관리합니다.">
+  <title>고1 공통수학2 · 통합과학2 30일 학습·복습 대시보드</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#dashboard" aria-label="학습 대시보드 홈">
+        <span class="brand-mark" aria-hidden="true">30</span>
+        <span>
+          <strong>고1 학습 대시보드</strong>
+          <small>공통수학2 · 통합과학2</small>
+        </span>
+      </a>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <button class="nav-button is-active" data-view="dashboard">대시보드</button>
+        <button class="nav-button" data-view="plan">30일 플랜</button>
+        <button class="nav-button" data-view="calendar">전체 캘린더</button>
+        <button class="nav-button" data-view="review">복습 관리</button>
+        <button class="nav-button" data-view="outputs">한 장 결과물</button>
+        <button class="nav-button" data-view="resources">강의·자료</button>
+      </nav>
+      <button id="theme-toggle" class="icon-button" type="button" aria-label="화면 테마 전환" title="화면 테마 전환">◐</button>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">정승제 47강 · 김청해 40강 · 4권 교재 · 1·3·7·14·30일 복습</p>
+        <h1>배우는 날과<br>다시 꺼내는 날을 함께 설계</h1>
+        <p class="hero-description">개학 전에는 수학 6시간·과학 4시간으로 집중하고, 개학 후에는 수학 3시간·과학 1시간·학교 수업 복습 1시간으로 전환합니다. 강의, 교재, 오답, 백지 복습, 한 장 결과물을 한곳에서 관리합니다.</p>
+        <div class="hero-actions">
+          <button class="primary-button" type="button" id="start-next-button">다음 학습 시작</button>
+          <button class="secondary-button" type="button" id="open-today-review">오늘 복습 보기</button>
+          <a class="secondary-button" href="https://www.ebsi.co.kr/ebs/lms/lmsx/retrieveSbjtDtl.ebs?courseId=S20250000701" target="_blank" rel="noopener noreferrer">김청해 강좌 ↗</a>
+        </div>
+      </div>
+
+      <div class="hero-panel" aria-label="학습 일정과 시간 설정">
+        <div class="setting-grid">
+          <div class="setting-field">
+            <label for="start-date">학습 시작일</label>
+            <input id="start-date" type="date">
+          </div>
+          <div class="setting-field">
+            <label for="study-end-date">본학습 종료일</label>
+            <input id="study-end-date" type="date" readonly>
+          </div>
+          <div class="setting-field">
+            <label for="school-start-date">개학일</label>
+            <input id="school-start-date" type="date">
+          </div>
+          <div class="setting-field">
+            <label for="review-end-date">최종 복습 예정일</label>
+            <input id="review-end-date" type="date" readonly>
+          </div>
+        </div>
+        <p id="schedule-note" class="setting-note"></p>
+
+        <details class="time-settings">
+          <summary>학습 시간 설정</summary>
+          <div class="time-setting-grid">
+            <label>방학 수학 <span><input id="vacation-math-hours" type="number" min="0.5" max="12" step="0.5">시간</span></label>
+            <label>방학 과학 <span><input id="vacation-science-hours" type="number" min="0.5" max="12" step="0.5">시간</span></label>
+            <label>개학 후 수학 <span><input id="school-math-hours" type="number" min="0.5" max="8" step="0.5">시간</span></label>
+            <label>개학 후 과학 <span><input id="school-science-hours" type="number" min="0.5" max="8" step="0.5">시간</span></label>
+            <label>학교 수업 복습 <span><input id="school-review-hours" type="number" min="0" max="4" step="0.5">시간</span></label>
+          </div>
+        </details>
+
+        <div class="backup-actions">
+          <button class="text-button" id="export-button" type="button">진도 백업</button>
+          <label class="text-button file-label" for="import-input">백업 불러오기</label>
+          <input id="import-input" class="visually-hidden" type="file" accept="application/json,.json">
+          <button class="text-button danger" id="reset-button" type="button">전체 초기화</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="view-container">
+      <section id="view-dashboard" class="app-view is-active" aria-labelledby="dashboard-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">오늘의 진행 상황</p>
+            <h2 id="dashboard-title">학습 대시보드</h2>
+          </div>
+          <p id="today-label" class="today-label"></p>
+        </div>
+
+        <div class="stat-grid stat-grid-five">
+          <article class="stat-card stat-card-main">
+            <div class="ring" id="overall-ring" style="--progress:0deg"><span id="overall-percent">0%</span></div>
+            <div>
+              <span class="stat-label">30일 완성도</span>
+              <strong id="overall-days">0 / 30일 완료</strong>
+              <small id="streak-label">연속 완료 0일</small>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon math">∑</span>
+            <span class="stat-label">정승제 수학 강의</span>
+            <strong id="math-progress">0%</strong>
+            <small id="math-lectures">0 / 47강</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon science">⚗</span>
+            <span class="stat-label">김청해 과학 강의</span>
+            <strong id="science-progress">0%</strong>
+            <small id="science-lectures">0 / 40강</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon review">↻</span>
+            <span class="stat-label">오늘 복습</span>
+            <strong id="review-due-count">0개</strong>
+            <small id="review-overdue-label">밀린 복습 0개</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon output">▤</span>
+            <span class="stat-label">한 장 결과물</span>
+            <strong id="output-progress">0</strong>
+            <small>30장 중 완료</small>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel next-panel" id="next-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">NEXT</span>
+                <h3>다음 미완료 학습</h3>
+              </div>
+              <span class="phase-chip" id="next-phase">방학 집중</span>
+            </div>
+            <div class="next-day-row">
+              <strong id="next-day">Day 1</strong>
+              <span id="next-date"></span>
+            </div>
+            <div class="next-subject-grid">
+              <div class="next-subject-block math-block">
+                <span>수학</span>
+                <h4 id="next-math-topic"></h4>
+                <p id="next-math-lecture"></p>
+                <small id="next-math-books"></small>
+              </div>
+              <div class="next-subject-block science-block">
+                <span>과학</span>
+                <h4 id="next-science-topic"></h4>
+                <p id="next-science-lecture"></p>
+                <small id="next-science-books"></small>
+              </div>
+            </div>
+            <p id="next-review-summary" class="next-mission"></p>
+            <div class="next-actions">
+              <button id="next-detail-button" class="primary-button" type="button">오늘 일정 체크</button>
+              <button id="next-calendar-button" class="secondary-button" type="button">캘린더에서 보기</button>
+            </div>
+          </article>
+
+          <div class="dashboard-side-stack">
+            <article class="panel today-review-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">REVIEW TODAY</span>
+                  <h3>오늘 꺼내볼 것</h3>
+                </div>
+                <button class="text-button" type="button" data-go-view="review">전체 보기</button>
+              </div>
+              <div id="today-review-mini" class="today-review-mini"></div>
+            </article>
+            <article class="panel time-budget-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">TIME BUDGET</span>
+                  <h3>오늘 시간 배분</h3>
+                </div>
+              </div>
+              <div id="today-time-budget" class="time-budget-list"></div>
+            </article>
+          </div>
+        </div>
+
+        <article class="panel book-progress-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">TEXTBOOKS</span>
+              <h3>교재별 진행률</h3>
+            </div>
+            <small>권장 분량 완료 체크 기준</small>
+          </div>
+          <div id="book-progress-grid" class="book-progress-grid"></div>
+        </article>
+
+        <article class="panel roadmap-panel">
+          <div class="panel-heading roadmap-heading">
+            <div>
+              <span class="panel-kicker">ROADMAP</span>
+              <h3>30일 학습 지도</h3>
+            </div>
+            <div class="legend" aria-label="상태 범례">
+              <span><i class="legend-dot done"></i>완료</span>
+              <span><i class="legend-dot active"></i>진행 중</span>
+              <span><i class="legend-dot idle"></i>미시작</span>
+            </div>
+          </div>
+          <div id="roadmap" class="roadmap" aria-label="30일 진행 상태"></div>
+        </article>
+      </section>
+
+      <section id="view-plan" class="app-view" aria-labelledby="plan-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">LECTURE · BOOK · OUTPUT</p>
+            <h2 id="plan-title">30일 학습 플랜</h2>
+          </div>
+          <p class="section-description">강의와 네 권의 교재를 같은 주제로 묶었습니다. 실제 푼 페이지·문제 번호는 Day 상세에서 기록할 수 있습니다.</p>
+        </div>
+
+        <div class="filter-bar" aria-label="학습 플랜 필터">
+          <div class="filter-group" id="phase-filters">
+            <button class="filter-button is-active" data-filter-phase="전체">전체 30일</button>
+            <button class="filter-button" data-filter-phase="방학 집중">방학 집중</button>
+            <button class="filter-button" data-filter-phase="개학 후 루틴">개학 후</button>
+            <button class="filter-button" data-filter-phase="최종 실전">최종 실전</button>
+          </div>
+          <select id="status-filter" aria-label="완료 상태 필터">
+            <option value="전체">모든 상태</option>
+            <option value="미완료">미완료만</option>
+            <option value="완료">완료만</option>
+          </select>
+        </div>
+        <div id="plan-list" class="plan-list expanded-plan-list"></div>
+      </section>
+
+      <section id="view-calendar" class="app-view" aria-labelledby="calendar-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">STUDY + SPACED REVIEW</p>
+            <h2 id="calendar-title">전체 학습·복습 캘린더</h2>
+          </div>
+          <p class="section-description">본학습 30일과 설정한 마지막 복습 주기까지 한 번에 보여줍니다. 날짜를 누르면 그날의 강의·교재·복습을 확인할 수 있습니다.</p>
+        </div>
+
+        <article class="panel calendar-summary-panel">
+          <div class="calendar-range-stats">
+            <div><span>시작</span><strong id="calendar-start"></strong></div>
+            <div><span>본학습 종료</span><strong id="calendar-study-end"></strong></div>
+            <div><span>최종 복습 예정</span><strong id="calendar-review-end"></strong></div>
+            <div><span>복습 주기</span><strong id="calendar-intervals"></strong></div>
+          </div>
+          <div class="calendar-legend">
+            <span><i class="calendar-dot math"></i>수학 강의</span>
+            <span><i class="calendar-dot science"></i>과학 강의</span>
+            <span><i class="calendar-dot review"></i>복습</span>
+            <span><i class="calendar-dot school"></i>학교 수업 복습</span>
+          </div>
+        </article>
+
+        <div id="calendar-months" class="calendar-months"></div>
+
+        <article class="panel agenda-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">FULL AGENDA</span>
+              <h3>30일 강의 전체 보기</h3>
+            </div>
+          </div>
+          <div id="calendar-agenda" class="calendar-agenda"></div>
+        </article>
+      </section>
+
+      <section id="view-review" class="app-view" aria-labelledby="review-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">RETRIEVAL PRACTICE</p>
+            <h2 id="review-title">복습 관리</h2>
+          </div>
+          <p class="section-description">노트를 읽기 전에 백지에서 먼저 꺼내고, 틀리면 그날을 기준으로 복습 주기를 다시 시작합니다.</p>
+        </div>
+
+        <div class="review-top-grid">
+          <article class="panel interval-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">INTERVAL</span>
+                <h3>복습 주기 설정</h3>
+              </div>
+              <button id="restore-default-intervals" class="text-button" type="button">기본값 복원</button>
+            </div>
+            <div class="interval-inputs" id="interval-inputs">
+              <label><span>1차</span><input type="number" min="1" max="90" data-interval-index="0"><small>일 뒤</small></label>
+              <label><span>2차</span><input type="number" min="1" max="90" data-interval-index="1"><small>일 뒤</small></label>
+              <label><span>3차</span><input type="number" min="1" max="90" data-interval-index="2"><small>일 뒤</small></label>
+              <label><span>4차</span><input type="number" min="1" max="90" data-interval-index="3"><small>일 뒤</small></label>
+              <label><span>5차</span><input type="number" min="1" max="90" data-interval-index="4"><small>일 뒤</small></label>
+            </div>
+            <p class="setting-help">기본값은 다음날·3일 뒤·1주일 뒤·2주일 뒤·한 달 뒤입니다. 숫자를 바꾸면 캘린더와 다음 복습일이 즉시 다시 계산됩니다.</p>
+          </article>
+
+          <article class="panel review-stats-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">REVIEW SCORE</span>
+                <h3>복습 현황</h3>
+              </div>
+            </div>
+            <div id="review-stats" class="review-stats"></div>
+          </article>
+        </div>
+
+        <article class="panel review-queue-panel">
+          <div class="panel-heading review-queue-heading">
+            <div>
+              <span class="panel-kicker">TODAY QUEUE</span>
+              <h3>이 날짜에 해야 할 복습</h3>
+            </div>
+            <label class="date-picker-label">날짜 <input id="review-view-date" type="date"></label>
+          </div>
+          <div id="review-queue" class="review-queue"></div>
+        </article>
+
+        <article class="panel review-method-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">HOW TO REVIEW</span>
+              <h3>백지·오답 복습 4단계</h3>
+            </div>
+          </div>
+          <div class="review-method-grid">
+            <div><strong>1. 덮기</strong><span>교재와 노트를 전부 덮고 문제·개념 제목만 봅니다.</span></div>
+            <div><strong>2. 10~20초 버티기</strong><span>바로 답을 보지 않고 스스로 떠올리는 시간을 확보합니다.</span></div>
+            <div><strong>3. 처음부터 재현</strong><span>수학은 풀이를 처음부터, 과학은 단원 흐름을 말이나 글로 설명합니다.</span></div>
+            <div><strong>4. 성공/다시</strong><span>혼자 끝까지 해냈을 때만 성공. 막히면 다시를 눌러 주기를 리셋합니다.</span></div>
+          </div>
+        </article>
+
+        <div class="tracker-grid">
+          <article class="panel tracker-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">WRONG ANSWERS</span>
+                <h3>틀린 문제 복습 주기표</h3>
+              </div>
+            </div>
+            <form id="mistake-form" class="tracker-form">
+              <select id="mistake-subject" aria-label="과목"><option>수학</option><option>과학</option></select>
+              <select id="mistake-book" aria-label="교재">
+                <option>개념원리 공통수학2</option><option>마플 시너지 공통수학2</option><option>오투 통합과학2</option><option>완자 기출픽 통합과학2</option><option>학교 프린트/교과서</option>
+              </select>
+              <input id="mistake-locator" type="text" placeholder="페이지·문제 번호" required>
+              <input id="mistake-reason" type="text" placeholder="틀린 이유 한 줄" required>
+              <input id="mistake-date" type="date" required>
+              <button class="primary-button" type="submit">오답 등록</button>
+            </form>
+            <div id="mistake-list" class="tracker-list"></div>
+          </article>
+
+          <article class="panel tracker-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">BLANK RECALL</span>
+                <h3>백지 복습 기록표</h3>
+              </div>
+            </div>
+            <form id="blank-form" class="tracker-form">
+              <select id="blank-subject" aria-label="과목"><option>수학</option><option>과학</option><option>학교 수업</option></select>
+              <input id="blank-unit" type="text" placeholder="단원·범위" required>
+              <input id="blank-blocked" type="text" placeholder="막힌 부분 = 모르는 부분" required>
+              <input id="blank-date" type="date" required>
+              <button class="primary-button" type="submit">백지 복습 등록</button>
+            </form>
+            <div id="blank-list" class="tracker-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-outputs" class="app-view" aria-labelledby="outputs-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">ONE PAGE A DAY</p>
+            <h2 id="outputs-title">매일 한 장 결과물</h2>
+          </div>
+          <p class="section-description">수학과 과학을 한 장에 함께 정리합니다. 이미지·PDF 첨부는 현재 브라우저에 저장됩니다.</p>
+        </div>
+        <div class="output-summary panel">
+          <div>
+            <span class="panel-kicker">PORTFOLIO</span>
+            <h3><span id="output-count-large">0</span>장의 공부 기록</h3>
+            <p>핵심 개념, 대표문제, 오답, 흐름도, 다음 복습 질문을 매일 한 장으로 남깁니다.</p>
+          </div>
+          <button id="open-next-output" class="primary-button" type="button">다음 결과물 작성</button>
+        </div>
+        <div id="output-list" class="output-list"></div>
+      </section>
+
+      <section id="view-resources" class="app-view" aria-labelledby="resources-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">LECTURES & BOOKS</p>
+            <h2 id="resources-title">강의·교재 자료실</h2>
+          </div>
+          <p class="section-description">EBSi 강좌는 새 탭에서 열립니다. 로그인 또는 수강신청이 필요할 수 있습니다.</p>
+        </div>
+        <div id="resource-list" class="resource-list"></div>
+
+        <article class="panel textbook-guide-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">4 BOOKS</span>
+              <h3>네 권의 역할을 겹치지 않게 쓰는 법</h3>
+            </div>
+          </div>
+          <div id="textbook-guide" class="textbook-guide"></div>
+          <p class="edition-note">인쇄 판본에 따라 페이지가 달라질 수 있어 계획은 중단원·유형·문항 수 기준으로 제시합니다. Day 상세의 ‘실제 푼 범위’에 자신의 페이지를 기록하세요.</p>
+        </article>
+
+        <div class="lecture-panels-grid">
+          <article class="panel lecture-index-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">EBSi MATH INDEX</span>
+                <h3>정승제 공통수학2 47강</h3>
+              </div>
+              <a class="secondary-button" href="https://www.ebsi.co.kr/ebs/lms/lmsx/retrieveSbjtDtl.ebs?courseId=S20240001005" target="_blank" rel="noopener noreferrer">공식 강좌 ↗</a>
+            </div>
+            <div id="math-lecture-index" class="lecture-index compact-index"></div>
+          </article>
+
+          <article class="panel lecture-index-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">EBSi SCIENCE INDEX</span>
+                <h3>김청해 시그널 통합과학2 40강</h3>
+              </div>
+              <a class="secondary-button" href="https://www.ebsi.co.kr/ebs/lms/lmsx/retrieveSbjtDtl.ebs?courseId=S20250000701" target="_blank" rel="noopener noreferrer">공식 강좌 ↗</a>
+            </div>
+            <div id="science-lecture-index" class="lecture-index compact-index"></div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>개인 학습용 정적 웹 대시보드 · 진행 데이터와 첨부 파일은 사용 중인 브라우저에 저장됩니다.</p>
+    <p>EBSi와 교재명은 각 권리자의 상표이며, 본 사이트는 비공식 개인 학습 도구입니다.</p>
+  </footer>
+
+  <div id="day-modal-backdrop" class="modal-backdrop" hidden>
+    <section class="result-modal wide-modal" role="dialog" aria-modal="true" aria-labelledby="day-modal-title">
+      <div class="modal-header">
+        <div>
+          <p id="day-modal-meta" class="modal-meta"></p>
+          <h2 id="day-modal-title">Day 일정</h2>
+        </div>
+        <button id="day-modal-close" class="icon-button modal-close" type="button" aria-label="닫기">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="day-budget-banner" class="day-budget-banner"></div>
+        <div id="day-task-sections" class="day-task-sections"></div>
+
+        <section id="day-review-section" class="modal-review-section">
+          <div class="modal-section-heading">
+            <div><span class="panel-kicker">SPACED REVIEW</span><h3>이날 예정된 복습</h3></div>
+            <button class="text-button" type="button" data-go-view="review">복습 관리 열기</button>
+          </div>
+          <div id="day-review-list" class="review-queue compact-review-queue"></div>
+        </section>
+
+        <section id="school-review-section" class="school-review-section" hidden>
+          <div class="modal-section-heading">
+            <div><span class="panel-kicker">SCHOOL REVIEW · 60 MIN</span><h3>학교 수업 복습</h3></div>
+          </div>
+          <label class="school-check-row"><input id="school-review-check" type="checkbox"> 오늘 학교 수업 복습 1시간 완료</label>
+          <div class="school-review-grid">
+            <label>오늘 배운 과목·범위<input id="school-review-topic" type="text" placeholder="예: 수학 직선의 방정식, 과학 산화환원"></label>
+            <label>막힌 부분·내일 질문<textarea id="school-review-note" rows="3" placeholder="30분 개념 재구성 → 20분 예제/숙제 → 10분 질문 정리"></textarea></label>
+          </div>
+        </section>
+
+        <fieldset class="daily-check-fieldset output-check-fieldset">
+          <legend>오늘의 마무리</legend>
+          <label class="daily-check-label large-check"><input id="output-check" type="checkbox"> 한 장 결과물 작성 완료</label>
+        </fieldset>
+
+        <div class="one-page-sheet">
+          <div class="sheet-title-row">
+            <div>
+              <label for="result-title">결과물 제목</label>
+              <input id="result-title" type="text" placeholder="예: Day 1 평면좌표·지질시대 핵심 정리">
+            </div>
+            <div>
+              <label for="self-rating">자기평가</label>
+              <select id="self-rating">
+                <option value="">선택</option>
+                <option value="1">1 · 다시 공부 필요</option>
+                <option value="2">2 · 많이 헷갈림</option>
+                <option value="3">3 · 기본은 이해</option>
+                <option value="4">4 · 문제 적용 가능</option>
+                <option value="5">5 · 설명할 수 있음</option>
+              </select>
+            </div>
+          </div>
+
+          <section class="sheet-section prompt-section">
+            <h3>오늘 한 장에 반드시 넣을 것</h3>
+            <p id="output-prompt"></p>
+          </section>
+          <section class="sheet-section">
+            <h3>1. 오늘의 핵심 개념 3개</h3>
+            <div class="concept-inputs">
+              <input id="concept-1" type="text" placeholder="① 수학 핵심 판단">
+              <input id="concept-2" type="text" placeholder="② 과학 핵심 흐름">
+              <input id="concept-3" type="text" placeholder="③ 오늘 가장 중요한 것">
+            </div>
+          </section>
+          <section class="sheet-section">
+            <h3>2. 대표문제 또는 대표개념 1개</h3>
+            <textarea id="representative-note" rows="5" placeholder="수학 풀이 또는 과학 자료 해석을 처음부터 설명하세요."></textarea>
+          </section>
+          <section class="sheet-section split-section">
+            <div><h3>3. 오답 또는 헷갈린 포인트</h3><textarea id="mistake-note" rows="4" placeholder="틀린 이유와 다음 판단 기준"></textarea></div>
+            <div><h3>4. 그림·그래프·흐름도</h3><textarea id="visual-note" rows="4" placeholder="좌표평면, 벤다이어그램, 함수 그래프, 생태 흐름, 에너지 전환"></textarea></div>
+          </section>
+          <section class="sheet-section split-section">
+            <div><h3>5. 오늘 막힌 점</h3><textarea id="stuck-note" rows="3" placeholder="다시 볼 강의 구간이나 질문"></textarea></div>
+            <div><h3>6. 다음 복습 때 답할 질문</h3><textarea id="review-question" rows="3" placeholder="노트를 덮고 답해 볼 질문"></textarea></div>
+          </section>
+          <section class="sheet-section attachment-section">
+            <div><h3>결과물 파일 첨부</h3><p>이미지 또는 PDF, 최대 10MB. 서버가 아니라 현재 브라우저에 저장됩니다.</p></div>
+            <label class="secondary-button file-label" for="attachment-input">파일 선택</label>
+            <input id="attachment-input" class="visually-hidden" type="file" accept="image/*,application/pdf">
+            <div id="attachment-info" class="attachment-info"></div>
+          </section>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span id="autosave-label">자동 저장됨</span>
+        <div>
+          <button id="complete-day-button" class="secondary-button" type="button">기본 학습 모두 체크</button>
+          <button id="print-button" class="secondary-button" type="button">한 장 인쇄/PDF</button>
+          <button id="day-modal-done" class="primary-button" type="button">저장하고 닫기</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="date-modal-backdrop" class="modal-backdrop" hidden>
+    <section class="result-modal date-modal" role="dialog" aria-modal="true" aria-labelledby="date-modal-title">
+      <div class="modal-header">
+        <div><p class="modal-meta">CALENDAR DETAIL</p><h2 id="date-modal-title">날짜 일정</h2></div>
+        <button id="date-modal-close" class="icon-button modal-close" type="button" aria-label="닫기">×</button>
+      </div>
+      <div id="date-modal-body" class="modal-body"></div>
+      <div class="modal-footer"><span></span><button id="date-modal-done" class="primary-button" type="button">닫기</button></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
