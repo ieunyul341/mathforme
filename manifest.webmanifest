@@ -1,0 +1,31 @@
+{
+  "name": "고1 공통수학2 · 통합과학2 학습·복습 대시보드",
+  "short_name": "고1 학습대시보드",
+  "description": "정승제 공통수학2, 김청해 2028 수능개념 통합과학2, 영어·매3비 지문과 간격 복습을 관리하는 30일 대시보드",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2f8",
+  "theme_color": "#172554",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "전체 캘린더",
+      "short_name": "캘린더",
+      "url": "./index.html#calendar"
+    },
+    {
+      "name": "오늘 복습",
+      "short_name": "복습",
+      "url": "./index.html#review"
+    }
+  ]
+}
