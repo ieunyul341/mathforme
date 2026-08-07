@@ -1,4 +1,4 @@
-const APP_VERSION = 8;
+const APP_VERSION = 9;
 
 const DEFAULT_START_DATE = "2026-08-07";
 
@@ -25,6 +25,18 @@ const LANGUAGE_TASKS = [
     "defaultMinutes": 25,
     "detail": "지문 1개 풀기 → 근거 문장 표시 → 모르는 단어 5개 → 해석이 막힌 문장 1개 다시 해석",
     "logPlaceholder": "지문 번호·틀린 문제·막힌 문장"
+  },
+  {
+    "key": "englishVocab",
+    "subject": "영어",
+    "title": "영단어 2유닛",
+    "shortTitle": "영단어 2유닛",
+    "role": "어휘 루틴",
+    "minutesKey": "englishVocab",
+    "defaultMinutes": 20,
+    "detail": "새 단어 2유닛 암기 + 전날 단어 빠른 복습",
+    "logPlaceholder": "새로 외운 유닛·복습한 유닛·헷갈린 단어",
+    "includeInReview": false
   },
   {
     "key": "mae3biPassage",
@@ -1519,5 +1531,12 @@ const TEXTBOOK_INFO = [
     "title": "매3비 비문학",
     "role": "비문학 지문 1개 루틴",
     "note": "문단별 핵심어와 선지 근거를 표시하고 틀린 선지는 오답 복습에 등록합니다."
+  },
+  {
+    "key": "englishVocab",
+    "subject": "영어",
+    "title": "영단어 2유닛",
+    "role": "새 단어 2유닛 + 전날 복습",
+    "note": "매일 새 단어 2유닛을 외우고, 다음 날에는 전날 유닛을 먼저 복습한 뒤 새 유닛을 이어갑니다."
   }
 ];

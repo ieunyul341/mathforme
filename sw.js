@@ -1,4 +1,4 @@
-const CACHE_NAME = "g1-study-dashboard-v8-20260807";
+const CACHE_NAME = "g1-study-dashboard-v9-20260807";
 const APP_SHELL = [
   "./",
   "./index.html",

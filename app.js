@@ -3,11 +3,12 @@ const OLD_STORAGE_KEY = "g1-common-math2-science2-dashboard-v3";
 const DB_NAME = "g1-study-dashboard-files";
 const DB_VERSION = 1;
 const FILE_STORE = "attachments";
-const DAY_CHECK_KEYS = ["mathLecture", "conceptMath", "maplMath", "scienceLecture", "o2Science", "wanjaScience", "englishPassage", "mae3biPassage", "output"];
-const BOOK_CHECK_KEYS = ["conceptMath", "maplMath", "o2Science", "wanjaScience", "englishPassage", "mae3biPassage"];
+const DAY_CHECK_KEYS = ["mathLecture", "conceptMath", "maplMath", "scienceLecture", "o2Science", "wanjaScience", "englishPassage", "englishVocab", "mae3biPassage", "output"];
+const BOOK_CHECK_KEYS = ["conceptMath", "maplMath", "o2Science", "wanjaScience", "englishPassage", "englishVocab", "mae3biPassage"];
 const TASK_STATUS_PENDING = "pending";
 const TASK_STATUS_DONE = "done";
 const TASK_STATUS_MISSED = "missed";
+const VOCAB_UNITS_PER_DAY = 2;
 
 let state = loadState();
 let activeView = "dashboard";
@@ -168,7 +169,7 @@ function defaultDayState() {
   return {
     checks: { ...flags },
     missed: { ...flags },
-    logs: { conceptMath: "", maplMath: "", o2Science: "", wanjaScience: "", englishPassage: "", mae3biPassage: "" },
+    logs: { conceptMath: "", maplMath: "", o2Science: "", wanjaScience: "", englishPassage: "", englishVocab: "", mae3biPassage: "" },
     school: { done: false, missed: false, topic: "", note: "" },
     resultTitle: "",
     rating: "",
@@ -198,6 +199,7 @@ function buildDefaultState() {
       schoolMath: 180,
       schoolScience: 60,
       englishReading: 25,
+      englishVocab: 20,
       koreanReading: 25,
       schoolReview: 60
     },
@@ -388,6 +390,42 @@ function getLanguageTask(key) {
   return LANGUAGE_TASKS.find(task => task.key === key);
 }
 
+function vocabUnitRange(day, offset = 0) {
+  const safeDay = Math.max(1, Number(day) || 1);
+  const start = (safeDay - 1) * VOCAB_UNITS_PER_DAY + 1 + offset;
+  return `Unit ${start}~${start + VOCAB_UNITS_PER_DAY - 1}`;
+}
+
+function getVocabNewUnits(day) {
+  return vocabUnitRange(day);
+}
+
+function getVocabReviewUnits(day) {
+  const safeDay = Math.max(1, Number(day) || 1);
+  if (safeDay <= 1) return "전날 복습 없음";
+  return vocabUnitRange(safeDay - 1);
+}
+
+function getLanguageTaskDetail(taskOrKey, day = activeDay || getDayForDate(localDateString()) || 1) {
+  const task = typeof taskOrKey === "string" ? getLanguageTask(taskOrKey) : taskOrKey;
+  if (!task) return "";
+  if (task.key === "englishVocab") {
+    const newUnits = getVocabNewUnits(day);
+    const reviewUnits = getVocabReviewUnits(day);
+    return `${day > 1 ? `전날 ${reviewUnits} 5분 복습 → ` : ""}새 단어 ${newUnits} 암기 → 뜻·스펠링 가리고 테스트 → 헷갈린 단어 표시`;
+  }
+  return task.detail || "";
+}
+
+function getLanguageTaskLogPlaceholder(taskOrKey, day = activeDay || getDayForDate(localDateString()) || 1) {
+  const task = typeof taskOrKey === "string" ? getLanguageTask(taskOrKey) : taskOrKey;
+  if (!task) return "실제 학습 범위";
+  if (task.key === "englishVocab") {
+    return `예: 새 ${getVocabNewUnits(day)}, 복습 ${getVocabReviewUnits(day)}, 헷갈린 단어 8개`;
+  }
+  return task.logPlaceholder || "실제 학습 범위";
+}
+
 function getLanguageMinutes(taskOrKey) {
   const task = typeof taskOrKey === "string" ? getLanguageTask(taskOrKey) : taskOrKey;
   if (!task) return 0;
@@ -407,7 +445,7 @@ function getMockExamsOnDate(dateString) {
 }
 
 function getOutputPrompt(item) {
-  return `${item.outputPrompt} + 영어 막힌 문장 1개 + 매3비 선지 근거 1개`;
+  return `${item.outputPrompt} + 영어 막힌 문장 1개 + 영단어 헷갈린 단어 3개 + 매3비 선지 근거 1개`;
 }
 
 function getDayBudget(day) {
@@ -440,7 +478,7 @@ function getTaskDescriptor(day, key) {
   const item = getPlan(day);
   if (!item) return null;
   const language = getLanguageTask(key);
-  if (language) return { subject: language.subject, title: language.title, detail: language.detail, minutes: getLanguageMinutes(language) };
+  if (language) return { subject: language.subject, title: language.title, detail: getLanguageTaskDetail(language, day), minutes: getLanguageMinutes(language) };
   const budget = getDayBudget(day);
   const descriptors = {
     mathLecture: { subject: "수학", title: item.math.lectureRange.length ? `정승제 ${lectureRangeLabel(item.math.lectureRange)}` : "수학 누적 실전", detail: item.math.lectureRange.length ? item.math.lectureTitles.join(" · ") : "도형·집합과 명제·함수 누적 실전", minutes: item.math.lectureMinutes },
@@ -586,7 +624,7 @@ function handleCarryover(id, result, handledDate = localDateString()) {
   renderAll();
   if (activeDay) openDay(activeDay);
   if (activeDate) openDate(activeDate);
-  showToast(result === "done" ? "이월 과제를 완료했습니다. 원래 일정에는 ‘이월 완료’로 반영됩니다." : "아직 못한 과제를 다음 날로 다시 이월했습니다.");
+  showToast(result === "done" ? "이월 과제를 완료했습니다. 원래 일정에는 ‘△ 이월완료’로 반영되고 완성도는 완료로 계산됩니다." : "아직 못한 과제를 다음 날로 다시 이월했습니다.");
 }
 
 function getDayProgress(day) {
@@ -650,16 +688,18 @@ function makeStudyTracks() {
     const dayState = getDayState(item.day);
     const mathActual = [dayState.logs.conceptMath && `개념원리 ${dayState.logs.conceptMath}`, dayState.logs.maplMath && `마플 ${dayState.logs.maplMath}`].filter(Boolean).join(" · ");
     const scienceActual = [dayState.logs.o2Science && `오투 ${dayState.logs.o2Science}`, dayState.logs.wanjaScience && `완자 ${dayState.logs.wanjaScience}`].filter(Boolean).join(" · ");
-    const languageTracks = LANGUAGE_TASKS.map(task => ({
-      id: `study-${task.key}-${item.day}`,
-      type: "study",
-      subject: task.subject,
-      day: item.day,
-      baseDate,
-      label: `Day ${item.day} · ${task.title}`,
-      source: task.role,
-      detail: dayState.logs[task.key] ? `실제 학습: ${dayState.logs[task.key]}` : task.detail
-    }));
+    const languageTracks = LANGUAGE_TASKS
+      .filter(task => task.includeInReview !== false)
+      .map(task => ({
+        id: `study-${task.key}-${item.day}`,
+        type: "study",
+        subject: task.subject,
+        day: item.day,
+        baseDate,
+        label: `Day ${item.day} · ${task.title}`,
+        source: task.role,
+        detail: dayState.logs[task.key] ? `실제 학습: ${dayState.logs[task.key]}` : getLanguageTaskDetail(task, item.day)
+      }));
     return [
       {
         id: `study-math-${item.day}`,
@@ -1214,6 +1254,7 @@ function getTimerPresetItems() {
     { subject: "과학", task: "오투 통합과학2" },
     { subject: "과학", task: "완자 기출픽 통합과학2" },
     { subject: "영어", task: "영어 독해 지문 1개" },
+    { subject: "영어", task: "영단어 2유닛" },
     { subject: "국어", task: "매3비 비문학 지문 1개" },
     { subject: "복습", task: "오답·간격 복습" }
   ];
@@ -1429,6 +1470,7 @@ function syncSettingsInputs() {
   $("#school-math-hours").value = state.timeBudgets.schoolMath / 60;
   $("#school-science-hours").value = state.timeBudgets.schoolScience / 60;
   $("#english-reading-minutes").value = getLanguageMinutes("englishPassage");
+  $("#english-vocab-minutes").value = getLanguageMinutes("englishVocab");
   $("#korean-reading-minutes").value = getLanguageMinutes("mae3biPassage");
   $("#school-review-hours").value = state.timeBudgets.schoolReview / 60;
   const vacationDays = STUDY_PLAN.filter(item => !isSchoolDate(getDateStringForDay(item.day))).length;
@@ -1479,9 +1521,9 @@ function renderNext() {
   $("#next-science-topic").textContent = item.science.focus;
   $("#next-science-lecture").textContent = `김청해 ${lectureRangeLabel(item.science.lectureRange)} · ${lectureTitleSummary(item.science.lectureTitles)}`;
   $("#next-science-books").textContent = `오투 + 완자 기출픽 · ${formatMinutes(getDayBudget(item.day).science)}`;
-  $("#next-reading-topic").textContent = "영어 1지문 + 매3비 1지문";
+  $("#next-reading-topic").textContent = "영어 1지문 + 영단어 2유닛 + 매3비 1지문";
   $("#next-reading-detail").textContent = LANGUAGE_TASKS.map(task => task.title).join(" · ");
-  $("#next-reading-books").textContent = `${getLanguageSummary()} · 해석/근거 기록`;
+  $("#next-reading-books").textContent = `${getLanguageSummary()} · 해석/어휘/근거 기록`;
   $("#next-review-summary").textContent = `이날 예정 복습 ${plannedReviews.length}개 · 이월 할 일 ${carryovers.length}개 · 현재 완료 ${progress.count}/${progress.total}${progress.missed ? ` · ✕ ${progress.missed}개` : ""}`;
   $("#next-detail-button").dataset.day = item.day;
   $("#start-next-button").dataset.day = item.day;
@@ -1600,8 +1642,8 @@ function renderPlan() {
         </section>
         <section class="plan-subject-card reading-block">
           <div class="plan-subject-title"><span class="subject-chip" data-subject="국어">국어·영어</span><b>${formatMinutes(budget.language)}</b></div>
-          <h4>매일 지문 루틴</h4>
-          ${LANGUAGE_TASKS.map(task => `<p><strong>${escapeHtml(task.shortTitle || task.title)}</strong> ${escapeHtml(task.detail)}</p>`).join("")}
+          <h4>매일 국어·영어 루틴</h4>
+          ${LANGUAGE_TASKS.map(task => `<p><strong>${escapeHtml(task.shortTitle || task.title)}</strong> ${escapeHtml(getLanguageTaskDetail(task, item.day))}</p>`).join("")}
         </section>
       </div>
       <div class="plan-footer-row">
@@ -1609,7 +1651,7 @@ function renderPlan() {
           <span>↻ 복습 ${reviews.length}개</span>
           ${carryovers.length ? `<span>↪ 이월 ${carryovers.length}개</span>` : ""}
           ${school ? `<span>🏫 학교 수업 복습 ${formatMinutes(budget.school)}</span>` : ""}
-          <span>📘 국어·영어 2지문</span>
+          <span>📘 국영 2지문 + 영단어</span>
           <span>▤ 한 장 결과물</span>
         </div>
         <div class="card-actions"><button class="primary-button" type="button" data-open-day="${item.day}">체크·기록</button><button class="secondary-button" type="button" data-open-date="${dateString}">날짜 상세</button></div>
@@ -1670,7 +1712,7 @@ function renderMonth(monthDate) {
       const plan = getPlan(planDay);
       events.push(`<span class="cal-event math">수 ${plan.math.lectureRange.length ? lectureRangeLabel(plan.math.lectureRange) : "실전"}</span>`);
       events.push(`<span class="cal-event science">과 ${lectureRangeLabel(plan.science.lectureRange)}</span>`);
-      events.push(`<span class="cal-event language">국영 2지문</span>`);
+      events.push(`<span class="cal-event language">국영 2지문+단어</span>`);
       if (isSchoolDate(dateString)) events.push(`<span class="cal-event school">학교 1h</span>`);
     }
     if (reviews.length) events.push(`<span class="cal-event review">복습 ${reviews.length}</span>`);
@@ -1819,15 +1861,16 @@ function renderResources() {
 
 function taskStatusLabel(status) {
   if (status === "done") return "오늘 완료";
-  if (status === "doneLate") return "이월 완료";
+  if (status === "doneLate") return "△ 미뤘지만 완료";
   if (status === "missed") return "못함 · 다음 날 이월";
   return "아직 표시 전";
 }
 
 function taskStatusControls(day, key) {
   const status = getTaskStatus(day, key);
+  const doneLabel = status === "doneLate" ? "△ 이월완료" : "✓ 완료";
   return `<div class="task-status-buttons" role="group" aria-label="완료 여부">
-    <button type="button" class="task-status-button done ${status === "done" || status === "doneLate" ? "is-active" : ""}" data-set-task-status="${key}" data-status="done" aria-pressed="${status === "done" || status === "doneLate"}">✓ 완료</button>
+    <button type="button" class="task-status-button done ${status === "done" || status === "doneLate" ? "is-active" : ""} ${status === "doneLate" ? "is-late" : ""}" data-set-task-status="${key}" data-status="done" aria-pressed="${status === "done" || status === "doneLate"}">${doneLabel}</button>
     <button type="button" class="task-status-button missed ${status === "missed" ? "is-active" : ""}" data-set-task-status="${key}" data-status="missed" aria-pressed="${status === "missed"}">✕ 못함</button>
   </div>`;
 }
@@ -1848,7 +1891,7 @@ function renderCarryoverItems(items, handledDate, allowActions = true) {
   return items.map(item => {
     const overdueDays = Math.max(0, Math.round((parseDate(handledDate) - parseDate(item.dueDate)) / 86400000));
     return `<article class="carryover-item ${overdueDays ? "is-overdue" : ""}">
-      <div class="carryover-item-main"><div class="review-item-chips"><span class="subject-chip" data-subject="${escapeHtml(item.subject)}">${escapeHtml(item.subject)}</span><span class="type-chip">Day ${item.originalDay} 이월</span>${overdueDays ? `<span class="overdue-chip">${overdueDays}일 밀림</span>` : ""}</div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.detail)} · ${formatMinutes(item.minutes)}</p><small>원래 일정 ${formatDate(item.originalDate)} → 현재 예정 ${formatDate(item.dueDate)}</small></div>
+      <div class="carryover-item-main"><div class="review-item-chips"><span class="subject-chip" data-subject="${escapeHtml(item.subject)}">${escapeHtml(item.subject)}</span><span class="type-chip">Day ${item.originalDay} 이월</span>${overdueDays ? `<span class="overdue-chip">${overdueDays}일 밀림</span>` : ""}</div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.detail)} · ${formatMinutes(item.minutes)}</p><small>원래 일정 ${formatDate(item.originalDate)} → 현재 예정 ${formatDate(item.dueDate)} · 완료하면 원래 Day는 △ 이월완료로 인정</small></div>
       <label class="carryover-note-label">오늘 실제로 마친 범위·메모<input type="text" data-carryover-note="${escapeHtml(item.id)}" value="${escapeHtml(item.note || "")}" placeholder="예: p.32~39, 101~118번까지 완료"></label>
       ${allowActions ? `<div class="carryover-actions"><button class="success-button" type="button" data-carryover-result="done" data-carryover-id="${escapeHtml(item.id)}" data-handled-date="${handledDate}">✓ 오늘 완료</button><button class="retry-button" type="button" data-carryover-result="missed" data-carryover-id="${escapeHtml(item.id)}" data-handled-date="${handledDate}">✕ 다시 이월</button></div>` : ""}
     </article>`;
@@ -1891,9 +1934,9 @@ function openDay(day) {
       </div>
     </section>
     <section class="day-subject-section language-section">
-      <div class="day-subject-heading"><div><span class="subject-chip" data-subject="국어">국어·영어</span><h3>매일 지문 루틴</h3><p>영어 1지문과 매3비 비문학 1지문은 속도를 잃지 않기 위한 최소 루틴입니다.</p></div><div class="timer-inline-actions"><button class="timer-inline-button" type="button" data-timer-subject="영어" data-timer-task="영어 독해 지문 1개">영어 타이머</button><button class="timer-inline-button" type="button" data-timer-subject="국어" data-timer-task="매3비 비문학 지문 1개">매3비 타이머</button></div></div>
+      <div class="day-subject-heading"><div><span class="subject-chip" data-subject="국어">국어·영어</span><h3>매일 국어·영어 루틴</h3><p>영어 지문 1개, 영단어 2유닛, 매3비 비문학 1지문을 할 일로 관리합니다.</p></div><div class="timer-inline-actions"><button class="timer-inline-button" type="button" data-timer-subject="영어" data-timer-task="영어 독해 지문 1개">영어 타이머</button><button class="timer-inline-button" type="button" data-timer-subject="영어" data-timer-task="영단어 2유닛">영단어 타이머</button><button class="timer-inline-button" type="button" data-timer-subject="국어" data-timer-task="매3비 비문학 지문 1개">매3비 타이머</button></div></div>
       <div class="task-check-list language-task-list">
-        ${LANGUAGE_TASKS.map(task => taskCheckRow(day, task.key, task.title, task.detail, getLanguageMinutes(task), task.key, task.logPlaceholder)).join("")}
+        ${LANGUAGE_TASKS.map(task => taskCheckRow(day, task.key, task.title, getLanguageTaskDetail(task, day), getLanguageMinutes(task), task.key, getLanguageTaskLogPlaceholder(task, day))).join("")}
       </div>
     </section>`;
 
@@ -1961,7 +2004,7 @@ function openDate(dateString) {
       ? item.math.lectureTitles.map((title, index) => `<li><b>${item.math.lectureRange[0] + index}강</b> ${escapeHtml(title)}</li>`).join("")
       : `<li><b>누적 실전</b> 개념·유형·오답을 시간 안에 다시 풉니다.</li>`;
     const scienceLectureList = item.science.lectureTitles.map((title, index) => `<li><b>${item.science.lectureRange[0] + index}강</b> ${escapeHtml(title)}</li>`).join("");
-    html += `<section class="date-study-card"><div class="date-study-head"><div><span class="phase-chip">Day ${day} · ${phaseForDay(day)}</span><h3>새 학습</h3></div><button class="primary-button" type="button" data-open-day="${day}">체크·기록 열기</button></div><div class="date-study-grid"><div class="math-block"><b>수학 ${formatMinutes(budget.math)}</b><strong>${escapeHtml(item.math.focus)}</strong><span>${item.math.lectureRange.length ? `정승제 ${lectureRangeLabel(item.math.lectureRange)}` : "누적 실전"}</span><ul class="date-lecture-list">${mathLectureList}</ul><div class="date-book-tasks"><p><b>개념원리</b> ${escapeHtml(item.math.conceptTask)}</p><p><b>마플 시너지</b> ${escapeHtml(item.math.practiceTask)}</p></div></div><div class="science-block"><b>과학 ${formatMinutes(budget.science)}</b><strong>${escapeHtml(item.science.focus)}</strong><span>김청해 ${lectureRangeLabel(item.science.lectureRange)}</span><ul class="date-lecture-list">${scienceLectureList}</ul><div class="date-book-tasks"><p><b>오투</b> ${escapeHtml(item.science.o2Task)}</p><p><b>완자 기출픽</b> ${escapeHtml(item.science.wanjaTask)}</p></div></div><div class="reading-block"><b>국어·영어 ${formatMinutes(budget.language)}</b><strong>매일 지문 루틴</strong><span>${escapeHtml(getLanguageSummary())}</span><div class="date-book-tasks">${LANGUAGE_TASKS.map(task => `<p><b>${escapeHtml(task.shortTitle || task.title)}</b> ${escapeHtml(task.detail)}</p>`).join("")}</div></div></div>${isSchoolDate(dateString) ? `<p class="school-date-note">🏫 학교 수업 복습 ${formatMinutes(budget.school)}</p>` : ""}</section>`;
+    html += `<section class="date-study-card"><div class="date-study-head"><div><span class="phase-chip">Day ${day} · ${phaseForDay(day)}</span><h3>새 학습</h3></div><button class="primary-button" type="button" data-open-day="${day}">체크·기록 열기</button></div><div class="date-study-grid"><div class="math-block"><b>수학 ${formatMinutes(budget.math)}</b><strong>${escapeHtml(item.math.focus)}</strong><span>${item.math.lectureRange.length ? `정승제 ${lectureRangeLabel(item.math.lectureRange)}` : "누적 실전"}</span><ul class="date-lecture-list">${mathLectureList}</ul><div class="date-book-tasks"><p><b>개념원리</b> ${escapeHtml(item.math.conceptTask)}</p><p><b>마플 시너지</b> ${escapeHtml(item.math.practiceTask)}</p></div></div><div class="science-block"><b>과학 ${formatMinutes(budget.science)}</b><strong>${escapeHtml(item.science.focus)}</strong><span>김청해 ${lectureRangeLabel(item.science.lectureRange)}</span><ul class="date-lecture-list">${scienceLectureList}</ul><div class="date-book-tasks"><p><b>오투</b> ${escapeHtml(item.science.o2Task)}</p><p><b>완자 기출픽</b> ${escapeHtml(item.science.wanjaTask)}</p></div></div><div class="reading-block"><b>국어·영어 ${formatMinutes(budget.language)}</b><strong>매일 국어·영어 루틴</strong><span>${escapeHtml(getLanguageSummary())}</span><div class="date-book-tasks">${LANGUAGE_TASKS.map(task => `<p><b>${escapeHtml(task.shortTitle || task.title)}</b> ${escapeHtml(getLanguageTaskDetail(task, day))}</p>`).join("")}</div></div></div>${isSchoolDate(dateString) ? `<p class="school-date-note">🏫 학교 수업 복습 ${formatMinutes(budget.school)}</p>` : ""}</section>`;
   }
   if (carryovers.length) html += `<section class="date-carryover-card"><div class="modal-section-heading"><div><span class="panel-kicker">CARRY OVER</span><h3>이날까지 밀린 할 일 (${carryovers.length}개)</h3></div></div><div class="carryover-list">${renderCarryoverItems(carryovers, dateString, compareDateStrings(dateString, localDateString()) <= 0)}</div></section>`;
   html += `<section class="date-review-card"><div class="modal-section-heading"><div><span class="panel-kicker">REVIEW</span><h3>이날의 복습 일정 ${planned.length ? `(${planned.length}개)` : ""}</h3></div></div>${planned.length ? renderPlannedReviewEvents(planned, dateString) : `<div class="empty-state compact-empty">예정된 복습이 없습니다.</div>`}</section>`;
@@ -2014,7 +2057,7 @@ function printDay(day) {
   }
   popup.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
     @page{size:A4;margin:13mm}*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;color:#111827;margin:0;font-size:12.5px;line-height:1.55}.page{border:1px solid #cbd5e1;padding:16px;min-height:268mm}.top{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #1e3a8a;padding-bottom:10px}.top h1{font-size:22px;margin:0}.meta{color:#475569}.badge{display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:999px;padding:4px 9px;font-weight:800}section{border-top:1px dashed #cbd5e1;padding-top:10px;margin-top:10px}h2{font-size:14px;margin:0 0 6px;color:#1e3a8a}.box{min-height:42px;border:1px solid #dbe3ef;border-radius:8px;padding:9px;background:#f8fafc}.concepts{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.courses{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}.footer{display:flex;justify-content:space-between;margin-top:12px;color:#64748b;font-size:11px}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-  </style></head><body><main class="page"><div class="top"><div><span class="badge">Day ${day}</span><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(formatDate(getDateStringForDay(day)))} · 자기평가 ${escapeHtml(d.rating || "-")} / 5</div></div></div><section class="courses"><div><h2>수학</h2><div class="box">${escapeHtml(item.math.focus)}<br>${item.math.lectureRange.length ? `정승제 ${escapeHtml(lectureRangeLabel(item.math.lectureRange))}` : "누적 실전"}</div></div><div><h2>과학</h2><div class="box">${escapeHtml(item.science.focus)}<br>김청해 ${escapeHtml(lectureRangeLabel(item.science.lectureRange))}</div></div><div><h2>국어·영어</h2><div class="box">${escapeHtml(getLanguageSummary())}<br>영어 막힌 문장 + 매3비 선지 근거</div></div></section><section><h2>1. 오늘의 핵심 개념 3개</h2><div class="concepts">${concepts.map(value => `<div class="box">${escapeHtml(value)}</div>`).join("")}</div></section><section><h2>2. 대표문제 또는 대표개념</h2><div class="box">${multiline(d.representative)}</div></section><section class="two"><div><h2>3. 오답·헷갈린 포인트</h2><div class="box">${multiline(d.mistake)}</div></div><div><h2>4. 그림·그래프·흐름도</h2><div class="box">${multiline(d.visual)}</div></div></section><section class="two"><div><h2>5. 오늘 막힌 점</h2><div class="box">${multiline(d.stuck)}</div></div><div><h2>6. 다음 복습 질문</h2><div class="box">${multiline(d.question)}</div></div></section><section><h2>오늘 결과물 미션</h2><div class="box">${escapeHtml(getOutputPrompt(item))}</div></section><div class="footer"><span>고1 공통수학2·통합과학2 학습·복습 대시보드</span><span>${d.checks.output ? "완료" : "작성 중"}</span></div></main><script>window.onload=()=>window.print();</script></body></html>`);
+  </style></head><body><main class="page"><div class="top"><div><span class="badge">Day ${day}</span><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(formatDate(getDateStringForDay(day)))} · 자기평가 ${escapeHtml(d.rating || "-")} / 5</div></div></div><section class="courses"><div><h2>수학</h2><div class="box">${escapeHtml(item.math.focus)}<br>${item.math.lectureRange.length ? `정승제 ${escapeHtml(lectureRangeLabel(item.math.lectureRange))}` : "누적 실전"}</div></div><div><h2>과학</h2><div class="box">${escapeHtml(item.science.focus)}<br>김청해 ${escapeHtml(lectureRangeLabel(item.science.lectureRange))}</div></div><div><h2>국어·영어</h2><div class="box">${escapeHtml(getLanguageSummary())}<br>영어 막힌 문장 + 영단어 헷갈린 단어 + 매3비 선지 근거</div></div></section><section><h2>1. 오늘의 핵심 개념 3개</h2><div class="concepts">${concepts.map(value => `<div class="box">${escapeHtml(value)}</div>`).join("")}</div></section><section><h2>2. 대표문제 또는 대표개념</h2><div class="box">${multiline(d.representative)}</div></section><section class="two"><div><h2>3. 오답·헷갈린 포인트</h2><div class="box">${multiline(d.mistake)}</div></div><div><h2>4. 그림·그래프·흐름도</h2><div class="box">${multiline(d.visual)}</div></div></section><section class="two"><div><h2>5. 오늘 막힌 점</h2><div class="box">${multiline(d.stuck)}</div></div><div><h2>6. 다음 복습 질문</h2><div class="box">${multiline(d.question)}</div></div></section><section><h2>오늘 결과물 미션</h2><div class="box">${escapeHtml(getOutputPrompt(item))}</div></section><div class="footer"><span>고1 공통수학2·통합과학2 학습·복습 대시보드</span><span>${d.checks.output ? "완료" : "작성 중"}</span></div></main><script>window.onload=()=>window.print();</script></body></html>`);
   popup.document.close();
 }
 
@@ -2187,7 +2230,7 @@ function formatBytes(bytes) {
 
 function updateTimeBudget(key, value) {
   const numeric = Math.max(0, Number(value) || 0);
-  const isMinuteInput = key === "englishReading" || key === "koreanReading";
+  const isMinuteInput = key === "englishReading" || key === "englishVocab" || key === "koreanReading";
   const minutes = Math.round(isMinuteInput ? numeric : numeric * 60);
   state.timeBudgets[key] = minutes;
   saveState();
@@ -2271,6 +2314,7 @@ function bindEvents() {
     "#school-math-hours": "schoolMath",
     "#school-science-hours": "schoolScience",
     "#english-reading-minutes": "englishReading",
+    "#english-vocab-minutes": "englishVocab",
     "#korean-reading-minutes": "koreanReading",
     "#school-review-hours": "schoolReview"
   };

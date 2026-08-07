@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#172554">
-  <meta name="description" content="고1 공통수학2·통합과학2 30일 독학 대시보드. 강의·교재·영어·매3비, 복습 범위 기록, 미완료 자동 이월과 50분 집중·10분 휴식 타이머를 함께 관리합니다.">
+  <meta name="description" content="고1 공통수학2·통합과학2 30일 독학 대시보드. 강의·교재·영어·영단어·매3비, 복습 범위 기록, 미완료 자동 이월과 50분 집중·10분 휴식 타이머를 함께 관리합니다.">
   <title>고1 공통수학2 · 통합과학2 30일 학습·복습 대시보드</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,7 @@
   <main id="main-content">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">정승제 47강 · 김청해 40강 · 영어·매3비 · 미완료 이월 · 복습 범위 기록</p>
+        <p class="eyebrow">정승제 47강 · 김청해 40강 · 영어·영단어·매3비 · △ 이월완료 · 복습 범위 기록</p>
         <h1>배우는 날과<br>다시 꺼내는 날을 함께 설계</h1>
         <p class="hero-description">개학 전에는 수학 6시간·과학 4시간으로 집중하고, 개학 후에는 수학 3시간·과학 1시간·학교 수업 복습 1시간으로 전환합니다. 오늘 할 일은 ✓ 완료 또는 ✕ 못함으로 남기고, 못한 항목은 다음 날 할 일로 자동 이월합니다. 복습할 때 실제로 다시 본 페이지·문제·강의 구간도 기록할 수 있습니다.</p>
         <div class="hero-actions">
@@ -80,6 +80,7 @@
             <label>개학 후 수학 <span><input id="school-math-hours" type="number" min="0.5" max="8" step="0.5">시간</span></label>
             <label>개학 후 과학 <span><input id="school-science-hours" type="number" min="0.5" max="8" step="0.5">시간</span></label>
             <label>영어 지문 <span><input id="english-reading-minutes" type="number" min="10" max="90" step="5">분</span></label>
+            <label>영단어 2유닛 <span><input id="english-vocab-minutes" type="number" min="5" max="90" step="5">분</span></label>
             <label>매3비 지문 <span><input id="korean-reading-minutes" type="number" min="10" max="90" step="5">분</span></label>
             <label>학교 수업 복습 <span><input id="school-review-hours" type="number" min="0" max="4" step="0.5">시간</span></label>
           </div>
@@ -127,9 +128,9 @@
           </article>
           <article class="stat-card">
             <span class="stat-icon reading">Aa</span>
-            <span class="stat-label">국어·영어 지문</span>
+            <span class="stat-label">국어·영어 루틴</span>
             <strong id="reading-progress">0%</strong>
-            <small id="reading-passages">0 / 60개</small>
+            <small id="reading-passages">0 / 90개</small>
           </article>
           <article class="stat-card">
             <span class="stat-icon review">↻</span>
@@ -369,7 +370,7 @@
             <p class="section-kicker">LECTURE · BOOK · OUTPUT</p>
             <h2 id="plan-title">30일 학습 플랜</h2>
           </div>
-          <p class="section-description">강의와 교재, 영어 지문 1개, 매3비 지문 1개를 같은 날짜에 묶었습니다. 실제 푼 페이지·문제 번호는 Day 상세에서 기록할 수 있습니다.</p>
+          <p class="section-description">강의와 교재, 영어 지문 1개, 영단어 2유닛, 매3비 지문 1개를 같은 날짜에 묶었습니다. 실제 푼 페이지·문제 번호와 외운 유닛은 Day 상세에서 기록할 수 있습니다.</p>
         </div>
 
         <div class="filter-bar" aria-label="학습 플랜 필터">
@@ -407,7 +408,7 @@
           <div class="calendar-legend">
             <span><i class="calendar-dot math"></i>수학 강의</span>
             <span><i class="calendar-dot science"></i>과학 강의</span>
-            <span><i class="calendar-dot language"></i>국어·영어 지문</span>
+            <span><i class="calendar-dot language"></i>국어·영어 루틴</span>
             <span><i class="calendar-dot review"></i>복습</span>
             <span><i class="calendar-dot school"></i>학교 수업 복습</span>
             <span><i class="calendar-dot exam"></i>모의고사</span>
@@ -505,7 +506,7 @@
             <form id="mistake-form" class="tracker-form">
               <select id="mistake-subject" aria-label="과목"><option>수학</option><option>과학</option><option>영어</option><option>국어</option></select>
               <select id="mistake-book" aria-label="교재">
-                <option>개념원리 공통수학2</option><option>마플 시너지 공통수학2</option><option>오투 통합과학2</option><option>완자 기출픽 통합과학2</option><option>영어 지문/프린트</option><option>매3비 비문학</option><option>학교 프린트/교과서</option>
+                <option>개념원리 공통수학2</option><option>마플 시너지 공통수학2</option><option>오투 통합과학2</option><option>완자 기출픽 통합과학2</option><option>영어 지문/프린트</option><option>영단어장</option><option>매3비 비문학</option><option>학교 프린트/교과서</option>
               </select>
               <input id="mistake-locator" type="text" placeholder="페이지·문제 번호" required>
               <input id="mistake-reason" type="text" placeholder="틀린 이유 한 줄" required>
@@ -559,7 +560,7 @@
             <p class="section-kicker">ONE PAGE A DAY</p>
             <h2 id="outputs-title">매일 한 장 결과물</h2>
           </div>
-          <p class="section-description">수학·과학에 영어 막힌 문장과 매3비 선지 근거까지 한 장에 함께 정리합니다. 이미지·PDF 첨부는 현재 브라우저에 저장됩니다.</p>
+          <p class="section-description">수학·과학에 영어 막힌 문장, 영단어 헷갈린 단어, 매3비 선지 근거까지 한 장에 함께 정리합니다. 이미지·PDF 첨부는 현재 브라우저에 저장됩니다.</p>
         </div>
         <div class="output-summary panel">
           <div>
@@ -578,7 +579,7 @@
             <p class="section-kicker">LECTURES & BOOKS</p>
             <h2 id="resources-title">강의·교재 자료실</h2>
           </div>
-          <p class="section-description">EBSi 강좌는 새 탭에서 열립니다. 영어 지문과 매3비는 자신이 쓰는 교재·프린트의 지문 번호를 Day 상세에 기록하세요.</p>
+          <p class="section-description">EBSi 강좌는 새 탭에서 열립니다. 영어 지문, 영단어 유닛, 매3비는 자신이 쓰는 교재·프린트의 번호를 Day 상세에 기록하세요.</p>
         </div>
         <div id="resource-list" class="resource-list"></div>
 
@@ -640,12 +641,12 @@
 
         <section id="day-carryover-section" class="day-carryover-section" hidden>
           <div class="modal-section-heading">
-            <div><span class="panel-kicker">CARRY OVER</span><h3>이전 날에서 넘어온 할 일</h3><p>완료하면 원래 Day 진도에도 ‘이월 완료’로 반영되고, 못하면 다음 날로 다시 넘어갑니다.</p></div>
+            <div><span class="panel-kicker">CARRY OVER</span><h3>이전 날에서 넘어온 할 일</h3><p>완료하면 원래 Day 진도에도 ‘△ 이월완료’로 남고, 대시보드 완성도에는 완료로 반영됩니다.</p></div>
           </div>
           <div id="day-carryover-list" class="carryover-list"></div>
         </section>
 
-        <div class="task-status-guide"><span><b>✓ 완료</b> 오늘 끝냄</span><span><b>✕ 못함</b> 다음 날 자동 이월</span><small>선택한 버튼을 다시 누르면 미정 상태로 되돌릴 수 있습니다.</small></div>
+        <div class="task-status-guide"><span><b>✓ 완료</b> 오늘 끝냄</span><span><b>✕ 못함</b> 다음 날 자동 이월</span><span><b>△ 이월완료</b> 미뤘지만 완료</span><small>△도 완성도에는 완료로 계산됩니다.</small></div>
         <div id="day-task-sections" class="day-task-sections"></div>
 
         <section id="day-review-section" class="modal-review-section">
